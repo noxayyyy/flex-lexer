@@ -67,10 +67,12 @@ LETTER [a-zA-Z]
 ";" { return T_SEMI; }
 "," { return T_COMMA; }
 
+\/\/.*\n |
+\/\#.*\n |
 [\t\n\r ]+ {}
 
 . {
-	printf("Lexical Error at line %d: Unknown char '%s'\n", yylineno, yytext);
+	// printf("Lexical Error at line %d: Unknown char '%s'\n", yylineno, yytext);
 	return T_ERROR;
 }
 %%
