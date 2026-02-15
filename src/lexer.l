@@ -13,29 +13,29 @@ int yylineno;
 DIGIT [0-9]
 LETTER [a-zA-Z]
 
-/* lexer rules section */ 
+/* lexer rules section */
 /* define your regex rules to match the tokens here (an example has been provided)*/
 %%
 <<EOF>> { return T_EOF; }
 
 "if"    { return T_IF; }
 "else" { return T_ELSE; }
-"while" { return T_WHILE, }
-"for" { return T_FOR, }
-"return" { return T_RETURN, }
-"int" { return T_INT, }
-"float" { return T_FLOAT, }
-"void" { return T_VOID, }
+"while" { return T_WHILE; }
+"for" { return T_FOR; }
+"return" { return T_RETURN; }
+"int" { return T_INT; }
+"float" { return T_FLOAT; }
+"void" { return T_VOID; }
 "bool" { return T_BOOL; }
 "main" { return T_MAIN; }
 "cin" { return T_CIN; }
 "cout" { return T_COUT; }
 
-"id" { return T_ID; }
-{DIGIT}+ { return T_INT_LIT; }
-{DIGIT}+\.{DIGIT}+ { return T_FLOAT_LIT; }
 "true" |
 "false" { return T_BOOL_LIT; }
+({LETTER}|_)({LETTER}|{DIGIT}|_)* { return T_ID; }
+{DIGIT}+ { return T_INT_LIT; }
+{DIGIT}+\.{DIGIT}+ { return T_FLOAT_LIT; }
 
 "+" { return T_PLUS; }
 "-" { return T_MINUS; }
@@ -65,7 +65,12 @@ LETTER [a-zA-Z]
 "[" { return T_LBRACKET; }
 "]" { return T_RBRACKET; }
 ";" { return T_SEMI; }
-"," { return T_COMM; }
+"," { return T_COMMA; }
 
-{ return T_ERROR; }
+[\t\n\r ]+ {}
+
+. {
+	printf("Lexical Error at line %d: Unknown char '%s'\n", yylineno, yytext);
+	return T_ERROR;
+}
 %%
