@@ -16,8 +16,6 @@ LETTER [a-zA-Z]
 /* lexer rules section */
 /* define your regex rules to match the tokens here (an example has been provided)*/
 %%
-<<EOF>> { return T_EOF; }
-
 "if"    { return T_IF; }
 "else" { return T_ELSE; }
 "while" { return T_WHILE; }
