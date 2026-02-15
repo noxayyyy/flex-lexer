@@ -1,0 +1,7 @@
+/# simple variable declarations
+
+int main() {
+    int x = 10;
+    float pi = 3.14;
+    bool isValid = true;
+}

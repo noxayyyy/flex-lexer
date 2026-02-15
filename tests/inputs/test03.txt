@@ -1,0 +1,7 @@
+/# negative and zero boundary values
+
+int main() {
+    int negative = -12345;
+    int zero = 0;
+    float small = 0.001;
+}

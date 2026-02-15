@@ -1,0 +1,17 @@
+/# invalid tokens test
+
+int main() {
+    int x = $5;
+    int y = @value;
+    int z = #10;
+
+    string s = "hello";  
+    char c = 'a';
+
+    float f = 3.14.15;   
+
+    x = y ? 10 : 20;
+    x+++;
+
+    return 0;
+}
