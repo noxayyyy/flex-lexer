@@ -34,26 +34,30 @@ LETTER [a-zA-Z]
 "true" |
 "false" { return T_BOOL_LIT; }
 ({LETTER}|_)({LETTER}|{DIGIT}|_)* { return T_ID; }
-{DIGIT}+ { return T_INT_LIT; }
 {DIGIT}+\.{DIGIT}+ { return T_FLOAT_LIT; }
+{DIGIT}+ { return T_INT_LIT; }
+
+"&&" { return T_AND; }
+"||" { return T_OR; }
+
+"==" { return T_EQ; }
+"!=" { return T_NEQ; }
+"<=" { return T_LE; }
+">=" { return T_GE; }
+
+"++" { return T_INCREMENT; }
+"--" { return T_DECREMENT; }
+
+"=" { return T_ASSIGN; }
+"<" { return T_LT; }
+">" { return T_GT; }
+"!" { return T_NOT; }
 
 "+" { return T_PLUS; }
 "-" { return T_MINUS; }
 "*" { return T_MULT; }
 "/" { return T_DIV; }
 "%" { return T_MOD; }
-"++" { return T_INCREMENT; }
-"--" { return T_DECREMENT; }
-"=" { return T_ASSIGN; }
-"==" { return T_EQ; }
-"!=" { return T_NEQ; }
-"<" { return T_LT; }
-"<=" { return T_LE; }
-">" { return T_GT; }
-">=" { return T_GE; }
-"&&" { return T_AND; }
-"||" { return T_OR; }
-"!" { return T_NOT; }
 
 ">>" { return T_STREAM_OUT; }
 "<<" { return T_STREAM_IN; }
@@ -67,8 +71,8 @@ LETTER [a-zA-Z]
 ";" { return T_SEMI; }
 "," { return T_COMMA; }
 
-\/\/.*\n |
-\/\#.*\n |
+\/\/.* |
+\/\#.* |
 [\t\n\r ]+ {}
 
 . {
