@@ -1,0 +1,24 @@
+// control flow test
+
+int main() {
+    bool flag = true;
+    int x = 100;
+    int y = 50;
+
+    if (x > y && flag) {
+        x = x - 1;
+    } else {
+        y = y + 1;
+    }
+
+    if (x == y || x != 0) {
+        y = 0;
+    }
+
+    if (x > 0) {
+        if (y < 10) {
+            x = 0;
+        }
+    }
+    return 0;
+}

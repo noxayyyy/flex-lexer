@@ -1,0 +1,18 @@
+// functions test (calls and returns)
+
+int add(int a, int b) {
+    return a + b;
+}
+
+void do_nothing() {
+    return;
+}
+
+int main() {
+    int res;
+    res = add(10, 20);
+    
+    do_nothing();
+    
+    return res;
+}

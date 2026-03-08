@@ -1,0 +1,61 @@
+--- AST Structure ---
+Program
+  FuncDecl: main
+    Block
+      Literal: int
+    Block
+      VarDecl: flag
+        Literal: bool
+        Literal: true
+      VarDecl: x
+        Literal: int
+        Literal: 100
+      VarDecl: y
+        Literal: int
+        Literal: 50
+      If
+        Op: &&
+          Op: >
+            Var: x
+            Var: y
+          Var: flag
+        Block
+          Block
+            Assign
+              Var: x
+              Op: -
+                Var: x
+                Literal: 1
+          Block
+            Assign
+              Var: y
+              Op: +
+                Var: y
+                Literal: 1
+      If
+        Op: ||
+          Op: ==
+            Var: x
+            Var: y
+          Op: !=
+            Var: x
+            Literal: 0
+        Block
+          Assign
+            Var: y
+            Literal: 0
+      If
+        Op: >
+          Var: x
+          Literal: 0
+        Block
+          If
+            Op: <
+              Var: y
+              Literal: 10
+            Block
+              Assign
+                Var: x
+                Literal: 0
+      Return
+        Literal: 0

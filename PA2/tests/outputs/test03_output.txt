@@ -1,0 +1,43 @@
+--- AST Structure ---
+Program
+  FuncDecl: main
+    Block
+      Literal: int
+    Block
+      VarDecl: i
+        Literal: int
+        Literal: 0
+      While
+        Op: <
+          Var: i
+          Literal: 10
+        Block
+          Assign
+            Var: i
+            Op: +
+              Var: i
+              Literal: 1
+      VarDecl: j
+        Literal: int
+      For
+        Assign
+          Var: j
+          Literal: 0
+        Block
+          Op: <
+            Var: j
+            Literal: 5
+          Block
+            Assign
+              Var: j
+              Op: +
+                Var: j
+                Literal: 1
+            Block
+              Assign
+                Var: i
+                Op: *
+                  Var: i
+                  Literal: 2
+      Return
+        Literal: 0
