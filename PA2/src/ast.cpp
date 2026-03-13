@@ -4,8 +4,9 @@
 
 using namespace std;
 
-ASTNode*
-create_node(NodeType type, char* data, int line, ASTNode* left, ASTNode* right, ASTNode* extra) {
+ASTNode* create_node(
+	NodeType type, const char* data, int line, ASTNode* left, ASTNode* right, ASTNode* extra
+) {
 	char* data_cpy = nullptr;
 	if (data) {
 		data_cpy = new char[strlen(data) + 1];

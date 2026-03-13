@@ -33,7 +33,9 @@ typedef struct ASTNode {
 extern "C" {
 #endif
 
-ASTNode* create_node(NodeType type, char* data, int line, ASTNode* left, ASTNode* right);
+ASTNode* create_node(
+	NodeType type, const char* data, int line, ASTNode* left, ASTNode* right, ASTNode* extra
+);
 ASTNode* append_node(ASTNode* head, ASTNode* new_node);
 void print_ast(ASTNode* node, int level);
 void free_ast(ASTNode* node);
