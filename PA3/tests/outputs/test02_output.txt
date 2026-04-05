@@ -1,0 +1,7 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+Error at line 6: Function called but not declared.
+Error at line 8: Attempted to call a non-function identifier.
+2 semantic error(s) found

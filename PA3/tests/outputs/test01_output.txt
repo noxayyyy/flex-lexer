@@ -1,0 +1,8 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+Error at line 5: Variable redeclared in the same scope.
+Error at line 7: Variable used but not declared.
+Error at line 14: Variable used but not declared.
+3 semantic error(s) found

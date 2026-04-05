@@ -1,0 +1,9 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+Error at line 7: Type mismatch in binary operation.
+Error at line 8: Type mismatch in binary operation.
+Error at line 10: Type mismatch in binary operation.
+Error at line 14: Type mismatch in binary operation.
+4 semantic error(s) found

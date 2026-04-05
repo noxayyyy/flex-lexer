@@ -1,0 +1,11 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+Error at line 8: Type mismatch in assignment.
+Error at line 9: Type mismatch in assignment.
+Error at line 10: Type mismatch in assignment.
+Error at line 12: Type mismatch in assignment.
+Error at line 13: Type mismatch in assignment.
+Error at line 14: Type mismatch in assignment.
+6 semantic error(s) found

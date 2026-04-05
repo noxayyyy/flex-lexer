@@ -1,0 +1,17 @@
+// type mismatch in binary operations test
+
+int main() {
+    int x = 5;
+    bool b = true;
+
+    int y = x + b;
+    bool z = b && x;
+    
+    if (x > b) {
+        x = 0;
+    }
+
+    if (x > 3.2) {
+        x = 1;
+    }
+}

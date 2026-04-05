@@ -1,0 +1,15 @@
+// undeclared and redefined variables test
+
+int main() {
+    int x = 10;
+    int x = 20;
+
+    y = 5;
+
+    {
+        int z = 1;
+        int x = 5;
+    }
+    
+    z = 2;
+}

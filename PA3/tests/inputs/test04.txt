@@ -1,0 +1,17 @@
+// function redeclaration and wrong return type test
+
+int add(int a, int b) {
+    return a + b;
+}
+
+float add(int a, float b) {
+    return a+b;
+}
+
+void invalid_func() {
+    return 1;
+}
+
+int main() {
+    return 0;
+}

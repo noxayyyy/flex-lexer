@@ -1,0 +1,9 @@
+// function called when not declared test
+
+int main() {
+    int x = 10;
+    
+    foo();
+    
+    x();
+}

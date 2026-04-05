@@ -43,5 +43,11 @@
 # pdf
 *.pdf
 
+# tex
+*.tex
+
+# zip
+*.zip
+
 # build
 build/

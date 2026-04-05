@@ -1,0 +1,8 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+Error at line 7: Function redeclared.
+Error at line 8: Type mismatch in binary operation.
+Error at line 12: Return value does not match function return type.
+3 semantic error(s) found

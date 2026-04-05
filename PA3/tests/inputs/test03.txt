@@ -1,0 +1,15 @@
+// type mismatch in assignment test
+
+int main() {
+    int i = 0;
+    float f = 1.5;
+    bool b = true;
+
+    i = true;
+    f = true;
+    b = 10;
+
+    i = f;
+    f = 2;
+    int j = true;
+}
