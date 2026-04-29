@@ -10,7 +10,7 @@ std::string generate_data(IRInst* ir_head);
 std::string generate_text(IRInst* ir_head);
 
 void generate_mips(IRInst* ir_head, char* output_filename) {
-	FILE* out = fopen(output_filename, "rw");
+	FILE* out = fopen(output_filename, "w");
 
 	fprintf(out, ".data\n");
 
@@ -28,6 +28,10 @@ void generate_mips(IRInst* ir_head, char* output_filename) {
 	// exit syscall
 	fprintf(out, "li $v0, 10\n");
 	fprintf(out, "syscall\n");
+
+	fclose(out);
+
+	out = fopen(output_filename, "r");
 
 	int ch;
 	while ((ch = fgetc(out)) != EOF) {
