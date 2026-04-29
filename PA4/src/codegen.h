@@ -12,7 +12,7 @@ extern "C" {
  * * @param ir_head: The head of the Intermediate Representation list
  * @param output_filename: The name of the file to write MIPS code to (e.g., "output.s")
  */
-void generate_mips(IRInst *ir_head, char *output_filename);
+void generate_mips(IRInst* ir_head, char* output_filename);
 
 #ifdef __cplusplus
 }

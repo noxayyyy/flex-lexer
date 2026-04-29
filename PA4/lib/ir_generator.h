@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-IRInst *generate_ir_from_ast(ASTNode *root);
+IRInst* generate_ir_from_ast(ASTNode* root);
 
 #ifdef __cplusplus
 }

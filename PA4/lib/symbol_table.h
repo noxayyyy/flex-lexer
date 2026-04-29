@@ -5,25 +5,19 @@
 extern "C" {
 #endif
 
-typedef enum {
-    KIND_VAR,
-    KIND_FUNC,
-    KIND_PARAM,
-    KIND_ARRAY
-} SymbolKind;
+typedef enum { KIND_VAR, KIND_FUNC, KIND_PARAM, KIND_ARRAY } SymbolKind;
 
 typedef struct Symbol {
-    char* name;
-    char* type;
-    SymbolKind kind;
-    int scope_level;
-    
-    int param_count; 
-    char** param_types;
-    
-    struct Symbol* next; 
-} Symbol;
+	char* name;
+	char* type;
+	SymbolKind kind;
+	int scope_level;
 
+	int param_count;
+	char** param_types;
+
+	struct Symbol* next;
+} Symbol;
 
 void init_symbol_table();
 

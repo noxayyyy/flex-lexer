@@ -1,0 +1,189 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/driver.o",
+      "src/driver.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/src/driver.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/driver.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/codegen.o",
+      "src/codegen.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/src/codegen.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/codegen.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/optimizer.o",
+      "src/optimizer.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/src/optimizer.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/optimizer.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/ast.o",
+      "lib/ast.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/ast.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/ast.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/errors.o",
+      "lib/errors.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/errors.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/errors.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/ir_generator.o",
+      "lib/ir_generator.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/ir_generator.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/ir_generator.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/ir.o",
+      "lib/ir.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/ir.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/ir.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/semantics.o",
+      "lib/semantics.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/semantics.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/semantics.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/symbol_table.o",
+      "lib/symbol_table.cpp"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/lib/symbol_table.cpp",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/symbol_table.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/parser.tab.o",
+      "build/parser.tab.c"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/parser.tab.c",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/parser.tab.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Wall",
+      "-g",
+      "-Ibuild",
+      "-Isrc",
+      "-Ilib",
+      "-c",
+      "-o",
+      "build/lex.yy.o",
+      "build/lex.yy.c"
+    ],
+    "directory": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4",
+    "file": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/lex.yy.c",
+    "output": "/home/mfareed/Documents/Assignments/CS464/PAs/PA4/build/lex.yy.o"
+  }
+]
