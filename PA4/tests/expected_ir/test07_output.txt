@@ -1,0 +1,28 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+No semantic errors found.
+
+--- Phase 4: IR Generation ---
+
+--- Phase 4b: Optimization ---
+Optimized IR:
+
+FUNCTION main:
+ASSIGN 0 sum
+ASSIGN 0 i
+LABEL L0
+LT i 10 t0
+IFZ t0 L1
+MUL i 4 t1
+ADD sum t1 t2
+ASSIGN t2 sum
+ADD i 1 t3
+ASSIGN t3 i
+GOTO L0
+LABEL L1
+PRINT sum
+
+--- Phase 5: MIPS Code Generation ---
+MIPS Assembly generated

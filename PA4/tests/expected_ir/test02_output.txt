@@ -1,0 +1,17 @@
+--- Phase 2: Syntax Analysis ---
+Syntax Analysis Complete. AST Generated.
+
+--- Phase 3: Semantic Analysis ---
+No semantic errors found.
+
+--- Phase 4: IR Generation ---
+
+--- Phase 4b: Optimization ---
+Optimized IR:
+
+FUNCTION main:
+PRINT 30
+RETURN 0
+
+--- Phase 5: MIPS Code Generation ---
+MIPS Assembly generated

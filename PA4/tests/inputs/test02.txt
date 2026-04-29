@@ -1,0 +1,15 @@
+// dead code elimination test
+
+int main() {
+    int a = 10;
+    int z = 20; 
+    
+    int c = a + z; 
+    
+    int d = 5;
+    cout << c;
+
+    return 0;
+
+    cout << d;
+}

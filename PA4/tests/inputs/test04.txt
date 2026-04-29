@@ -1,0 +1,10 @@
+// functions test
+
+int multiply(int a, int z) {
+    return a * z;
+}
+
+int main() {
+    int result = multiply(56, 2);
+    cout << result;
+}

@@ -1,0 +1,7 @@
+// basic constant folding test
+
+int main() {
+    int x = 10 + 20;
+    int y = 100 / 2;
+    cout << x + y;
+}
