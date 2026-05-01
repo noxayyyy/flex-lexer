@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
@@ -224,14 +225,174 @@ int dead_code_elimination(IRInst* head) {
 	return changes_made;
 }
 
+bool is_numeric(std::string arg) {
+	return std::all_of(arg.begin(), arg.end(), [](char a) { return std::isdigit(a); });
+}
+
+bool check_arg1(IRInst* inst, const std::unordered_map<std::string, int>& known_constants) {
+	if (!inst->arg1 || is_numeric(inst->arg1)) {
+		return false;
+	}
+
+	auto it = known_constants.find(inst->arg1);
+	if (it == known_constants.end()) {
+		return false;
+	}
+
+	delete[] inst->arg1;
+	inst->arg1 = strdup(std::to_string(it->second).c_str());
+
+	return true;
+}
+
+bool check_arg2(IRInst* inst, const std::unordered_map<std::string, int>& known_constants) {
+	if (!inst->arg2 || is_numeric(inst->arg2)) {
+		return false;
+	}
+
+	auto it = known_constants.find(inst->arg2);
+	if (it == known_constants.end()) {
+		return false;
+	}
+
+	delete[] inst->arg2;
+	inst->arg2 = strdup(std::to_string(it->second).c_str());
+
+	return true;
+}
+
 int constant_propagation(IRInst* head) {
-	return 0;
+	std::unordered_map<std::string, int> known_constants;
+	int changes_made = 0;
+
+	for (IRInst* curr = head; curr; curr = curr->next) {
+		changes_made += check_arg1(curr, known_constants);
+		changes_made += check_arg2(curr, known_constants);
+
+		if (curr->result) {
+			known_constants.erase(curr->result);
+		}
+
+		if (curr->op == IR_ASSIGN && curr->result && curr->arg1 && is_numeric(curr->arg1)) {
+			known_constants.insert_or_assign(curr->result, std::stoi(curr->arg1));
+		} else if (curr->op == IR_LABEL || curr->op == IR_FUNC_START) {
+			known_constants.clear();
+		}
+	}
+
+	return changes_made;
 }
 
 int loop_invariant_code_motion(IRInst* head) {
 	return 0;
 }
 
+bool optimise_mul(IRInst* inst) {
+	if (is_numeric(inst->arg1)) {
+		if (!std::stoi(inst->arg1)) {
+			inst->op = IR_ASSIGN;
+
+			delete[] inst->arg1;
+			delete[] inst->arg2;
+
+			inst->arg1 = strdup("0");
+			inst->arg2 = nullptr;
+
+			return true;
+		}
+		if (std::stoi(inst->arg1) == 1) {
+			inst->op = IR_ASSIGN;
+
+			delete[] inst->arg1;
+
+			inst->arg1 = inst->arg2;
+			inst->arg2 = nullptr;
+
+			return true;
+		}
+		if (std::stoi(inst->arg1) == 2) {
+			inst->op = IR_ADD;
+
+			delete[] inst->arg1;
+			inst->arg1 = strdup(inst->arg2);
+
+			return true;
+		}
+	}
+
+	if (is_numeric(inst->arg2)) {
+		if (!std::stoi(inst->arg2)) {
+			inst->op = IR_ASSIGN;
+
+			delete[] inst->arg1;
+			delete[] inst->arg2;
+
+			inst->arg1 = strdup("0");
+			inst->arg2 = nullptr;
+
+			return true;
+		}
+
+		if (std::stoi(inst->arg2) == 1) {
+			inst->op = IR_ASSIGN;
+
+			delete[] inst->arg2;
+			inst->arg2 = nullptr;
+
+			return true;
+		}
+
+		if (std::stoi(inst->arg2) == 2) {
+			inst->op = IR_ADD;
+
+			delete[] inst->arg2;
+			inst->arg2 = strdup(inst->arg1);
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool optimise_zero(IRInst* inst) {
+	if (is_numeric(inst->arg1) && std::stoi(inst->arg1) == 0) {
+		inst->op = IR_ASSIGN;
+
+		delete[] inst->arg1;
+
+		inst->arg1 = inst->arg2;
+		inst->arg2 = nullptr;
+
+		return true;
+	}
+	if (is_numeric(inst->arg2) && std::stoi(inst->arg2) == 0) {
+		inst->op = IR_ASSIGN;
+
+		delete[] inst->arg2;
+		inst->arg2 = nullptr;
+
+		return true;
+	}
+
+	return false;
+}
+
 int strength_reduction(IRInst* head) {
-	return 0;
+	int changes_made = 0;
+	for (IRInst* curr = head; curr; curr = curr->next) {
+		switch (curr->op) {
+		case IR_MUL:
+			changes_made += optimise_mul(curr);
+			break;
+		case IR_ADD:
+		case IR_SUB:
+			changes_made += optimise_zero(curr);
+			break;
+		default:
+			break;
+		}
+	}
+
+	return changes_made;
 }
