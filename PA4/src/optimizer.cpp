@@ -6,36 +6,10 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "ir.h"
 #include "optimizer.h"
-
-struct ReachIr : public IRInst {
-	bool is_reachable = false;
-	bool is_dead = false;
-	ReachIr* next = nullptr;
-
-	ReachIr(const IRInst& ir) : IRInst(ir) {}
-
-	bool has_side_effects() const {
-		switch (op) {
-		case IR_IFZ:
-		case IR_GOTO:
-		case IR_LABEL:
-		case IR_FUNC_START:
-		case IR_PARAM:
-		case IR_POP_PARAM:
-		case IR_CALL:
-		case IR_RET:
-		case IR_ARRAY_STORE:
-		case IR_READ:
-		case IR_PRINT:
-			return true;
-		default:
-			return false;
-		}
-	}
-};
 
 void optimize_ir(IRInst* head) {
 	int total_changes = 1;
@@ -98,49 +72,37 @@ int constant_folding(IRInst* head) {
 	return 0;
 }
 
-ReachIr* build_reach_ir_ll(IRInst*& head) {
-	ReachIr* reach_head = new ReachIr(*head);
-	if (head->next) {
-		reach_head->next = new ReachIr(*head->next);
-	}
-	ReachIr* reach_curr = reach_head->next;
+std::unordered_map<std::string, IRInst*> build_lookup(IRInst*& head) {
+	std::unordered_map<std::string, IRInst*> label_lookup;
 
-	for (IRInst* curr = head->next; curr; curr = curr->next) {
-		if (curr->next) {
-			reach_curr->next = new ReachIr(*curr->next);
-		}
-		reach_curr = reach_curr->next;
-	}
-
-	return reach_head;
-}
-
-std::unordered_map<std::string, ReachIr*> build_lookup(ReachIr*& head) {
-	std::unordered_map<std::string, ReachIr*> label_lookup;
-
-	for (ReachIr* curr = head; curr; curr = curr->next) {
-		if (curr->op != IR_LABEL) continue;
+	for (IRInst* curr = head; curr; curr = curr->next) {
+		if (curr->op != IR_LABEL || !curr->arg1) continue;
 		label_lookup[curr->arg1] = curr;
 	}
 
 	return label_lookup;
 }
 
-void mark_reachable(ReachIr*& head, const std::unordered_map<std::string, ReachIr*> label_lookup) {
-	if (!head) return;
+std::unordered_set<IRInst*>
+get_reachable(IRInst*& head, const std::unordered_map<std::string, IRInst*> label_lookup) {
+	if (!head) {
+		return std::unordered_set<IRInst*>();
+	}
 
-	std::stack<ReachIr*> work_stack;
-	head->is_reachable = true;
+	std::unordered_set<IRInst*> reachable;
+	std::stack<IRInst*> work_stack;
+
+	reachable.insert(head);
 	work_stack.push(head);
 
-	auto mark_and_push = [&](ReachIr* target) {
-		if (!target || target->is_reachable) return;
-		target->is_reachable = true;
+	auto mark_and_push = [&](IRInst* target) {
+		if (!target || reachable.count(target)) return;
+		reachable.insert(target);
 		work_stack.push(target);
 	};
 
 	while (!work_stack.empty()) {
-		ReachIr* curr = work_stack.top();
+		IRInst* curr = work_stack.top();
 		work_stack.pop();
 
 		switch (curr->op) {
@@ -155,17 +117,20 @@ void mark_reachable(ReachIr*& head, const std::unordered_map<std::string, ReachI
 			break;
 		default:
 			mark_and_push(curr->next);
+			break;
 		}
 	}
+
+	return reachable;
 }
 
-int sweep_unreachable(ReachIr*& head) {
-	ReachIr** curr_ptr = &head;
+int sweep_unreachable(IRInst*& head, std::unordered_set<IRInst*> reachable) {
+	IRInst** curr_ptr = &head;
 	int changes_made = 0;
 
 	while (*curr_ptr) {
-		ReachIr* curr = *curr_ptr;
-		if (curr->is_reachable) {
+		IRInst* curr = *curr_ptr;
+		if (reachable.count(curr)) {
 			curr_ptr = &(*curr_ptr)->next;
 			continue;
 		}
@@ -177,10 +142,10 @@ int sweep_unreachable(ReachIr*& head) {
 	return changes_made;
 }
 
-std::unordered_map<std::string, int> calculate_uses(ReachIr*& head) {
+std::unordered_map<std::string, int> calculate_uses(IRInst*& head) {
 	std::unordered_map<std::string, int> use_counts;
 
-	for (ReachIr* curr = head; curr; curr = curr->next) {
+	for (IRInst* curr = head; curr; curr = curr->next) {
 		if (curr->arg1 && (*curr->arg1 != '\0')) {
 			use_counts[curr->arg1]++;
 		}
@@ -198,14 +163,33 @@ std::unordered_map<std::string, int> calculate_uses(ReachIr*& head) {
 	return use_counts;
 }
 
-int sweep_dead_assignments(ReachIr*& head, std::unordered_map<std::string, int> use_counts) {
-	ReachIr** curr_ptr = &head;
+bool has_side_effects(IRInst* inst) {
+	switch (inst->op) {
+	case IR_IFZ:
+	case IR_GOTO:
+	case IR_LABEL:
+	case IR_FUNC_START:
+	case IR_PARAM:
+	case IR_POP_PARAM:
+	case IR_CALL:
+	case IR_RET:
+	case IR_ARRAY_STORE:
+	case IR_READ:
+	case IR_PRINT:
+		return true;
+	default:
+		return false;
+	}
+}
+
+int sweep_dead_assignments(IRInst*& head, std::unordered_map<std::string, int> use_counts) {
+	IRInst** curr_ptr = &head;
 	int changes_made = 0;
 
 	while (*curr_ptr != nullptr) {
-		ReachIr* curr = *curr_ptr;
+		IRInst* curr = *curr_ptr;
 
-		if (curr->has_side_effects() || (!curr->result || (*curr->result == '\0')) ||
+		if (has_side_effects(curr) || (!curr->result || (*curr->result == '\0')) ||
 			use_counts[curr->result]) {
 			curr_ptr = &(*curr_ptr)->next;
 			continue;
@@ -219,37 +203,23 @@ int sweep_dead_assignments(ReachIr*& head, std::unordered_map<std::string, int> 
 	return changes_made;
 }
 
-IRInst* rebuild_ir_ll(ReachIr*& reach_head) {
-	IRInst* head =
-		create_instruction(reach_head->op, reach_head->arg1, reach_head->arg2, reach_head->result);
-
-	for (IRInst* curr_reach = reach_head->next; curr_reach; curr_reach = curr_reach->next) {
-		IRInst* curr = create_instruction(
-			curr_reach->op, curr_reach->arg1, curr_reach->arg2, curr_reach->result
-		);
-		append_instruction(head, curr);
-	}
-
-	return head;
-}
-
 int dead_code_elimination(IRInst* head) {
 	if (!head) {
 		return 0;
 	}
 
-	ReachIr* reach_head = build_reach_ir_ll(head);
 	int changes_made = 0;
 
-	std::unordered_map<std::string, ReachIr*> label_lookup = build_lookup(reach_head);
-	mark_reachable(reach_head, label_lookup);
-	changes_made += sweep_unreachable(reach_head);
+	std::unordered_map<std::string, IRInst*> label_lookup = build_lookup(head);
+	std::unordered_set<IRInst*> reachable = get_reachable(head, label_lookup);
+	changes_made += sweep_unreachable(head, reachable);
 
-	std::unordered_map<std::string, int> use_counts = calculate_uses(reach_head);
-	changes_made += sweep_dead_assignments(reach_head, use_counts);
-
-	free_ir_list(head);
-	head = rebuild_ir_ll(reach_head);
+	int assignments_changed = 1;
+	while (assignments_changed) {
+		std::unordered_map<std::string, int> use_counts = calculate_uses(head);
+		assignments_changed = sweep_dead_assignments(head, use_counts);
+		changes_made += assignments_changed;
+	}
 
 	return changes_made;
 }
