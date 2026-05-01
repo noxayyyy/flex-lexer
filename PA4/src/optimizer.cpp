@@ -12,6 +12,20 @@
 #include "ir.h"
 #include "optimizer.h"
 
+char* _ir_strdup(const char* src) {
+	if (!src) return nullptr;
+
+	size_t len = strlen(src) + 1;
+	char* dest = new char[len];
+	strcpy(dest, src);
+
+	return dest;
+}
+
+bool is_numeric(std::string arg) {
+	return std::all_of(arg.begin(), arg.end(), [](char a) { return std::isdigit(a); });
+}
+
 void optimize_ir(IRInst* head) {
 	int total_changes = 1;
 	int dead_code;
@@ -29,56 +43,148 @@ void optimize_ir(IRInst* head) {
 
 	int pass_count = 1;
 	while (total_changes > 0) {
-		printf("Pass#%d\n", pass_count);
+		// printf("Pass#%d\n", pass_count);
 
 		dead_code = dead_code_elimination(head);
-		printf("\tDead Code Eliminated: %d\n", dead_code);
+		// printf("\tDead Code Eliminated: %d\n", dead_code);
 		g_dead_code += dead_code;
 
 		strength = strength_reduction(head);
-		printf("\tStrength Reduced: %d\n", strength);
+		// printf("\tStrength Reduced: %d\n", strength);
 		g_strength += strength;
 
 		licm = loop_invariant_code_motion(head);
-		printf("\tLICM: %d\n", licm);
+		// printf("\tLICM: %d\n", licm);
 		g_licm += licm;
 
 		propogated = constant_propagation(head);
-		printf("\tConstants Propogated: %d\n", propogated);
+		// printf("\tConstants Propogated: %d\n", propogated);
 		g_propogated += propogated;
 
 		folding = constant_folding(head);
-		printf("\tConstants Folded: %d\n", folding);
+		// printf("\tConstants Folded: %d\n", folding);
 		g_folding += folding;
 
 		total_changes = dead_code + strength + licm + propogated + folding;
-		printf("\tTotal Changes: %d\n\n", total_changes);
+		// printf("\tTotal Changes: %d\n\n", total_changes);
 		g_total_changes += total_changes;
+
+		// print_ir_list(head);
 
 		pass_count++;
 	}
 
-	printf("Total\n");
-	printf("\tDead Code Eliminated: %d\n", g_dead_code);
-	printf("\tStrength Reduced: %d\n", g_strength);
-	printf("\tLICM: %d\n", g_licm);
-	printf("\tConstants Propogated: %d\n", g_propogated);
-	printf("\tConstants Folded: %d\n", g_folding);
-	printf("\tTotal Changes: %d\n\n", g_total_changes);
+	// printf("Total\n");
+	// printf("\tDead Code Eliminated: %d\n", g_dead_code);
+	// printf("\tStrength Reduced: %d\n", g_strength);
+	// printf("\tLICM: %d\n", g_licm);
+	// printf("\tConstants Propogated: %d\n", g_propogated);
+	// printf("\tConstants Folded: %d\n", g_folding);
+	// printf("\tTotal Changes: %d\n\n", g_total_changes);
 
 	return;
 }
 
 int constant_folding(IRInst* head) {
-	return 0;
+	int changes_made = 0;
+
+	for (IRInst* curr = head; curr; curr = curr->next) {
+		if (curr->op == IR_NOT) {
+			int arg1 = std::stoi(curr->arg1);
+			int result = !arg1;
+
+			curr->op = IR_ASSIGN;
+			delete[] curr->arg1;
+			curr->arg1 = _ir_strdup(std::to_string(result).c_str());
+
+			changes_made++;
+
+			continue;
+		}
+
+		bool is_binary_op = curr->op == IR_ADD || curr->op == IR_SUB || curr->op == IR_MUL ||
+							curr->op == IR_DIV || curr->op == IR_MOD || curr->op == IR_GT ||
+							curr->op == IR_LT || curr->op == IR_GTE || curr->op == IR_LTE ||
+							curr->op == IR_EQ || curr->op == IR_NEQ || curr->op == IR_AND ||
+							curr->op == IR_OR;
+
+		if (!is_binary_op || !is_numeric(curr->arg1) || !is_numeric(curr->arg2)) continue;
+
+		int arg1 = std::stoi(curr->arg1);
+		int arg2 = std::stoi(curr->arg2);
+		int result;
+
+		switch (curr->op) {
+		// Arithmetic
+		case IR_ADD:
+			result = arg1 + arg2;
+			break;
+		case IR_SUB:
+			result = arg1 - arg2;
+			break;
+		case IR_MUL:
+			result = arg1 * arg2;
+			break;
+		case IR_DIV:
+			if (arg2 == 0) continue;
+			result = arg1 / arg2;
+			break;
+		case IR_MOD:
+			if (arg2 == 0) continue;
+			result = arg1 % arg2;
+			break;
+
+		// Relational
+		case IR_GT:
+			result = arg1 > arg2;
+			break;
+		case IR_LT:
+			result = arg1 < arg2;
+			break;
+		case IR_GTE:
+			result = arg1 >= arg2;
+			break;
+		case IR_LTE:
+			result = arg1 <= arg2;
+			break;
+		case IR_EQ:
+			result = arg1 == arg2;
+			break;
+		case IR_NEQ:
+			result = arg1 != arg2;
+			break;
+
+		// Logical
+		case IR_AND:
+			result = arg1 && arg2;
+			break;
+		case IR_OR:
+			result = arg1 || arg2;
+			break;
+		default:
+			continue;
+		}
+
+		curr->op = IR_ASSIGN;
+
+		delete[] curr->arg1;
+		delete[] curr->arg2;
+
+		curr->arg1 = _ir_strdup(std::to_string(result).c_str());
+		curr->arg2 = nullptr;
+
+		changes_made++;
+	}
+
+	return changes_made;
 }
 
 std::unordered_map<std::string, IRInst*> build_lookup(IRInst*& head) {
 	std::unordered_map<std::string, IRInst*> label_lookup;
 
 	for (IRInst* curr = head; curr; curr = curr->next) {
-		if (curr->op != IR_LABEL || !curr->arg1) continue;
-		label_lookup[curr->arg1] = curr;
+		if ((curr->op != IR_LABEL && curr->op != IR_FUNC_START) || !curr->result) continue;
+		label_lookup[curr->result] = curr;
 	}
 
 	return label_lookup;
@@ -93,14 +199,17 @@ get_reachable(IRInst*& head, const std::unordered_map<std::string, IRInst*> labe
 	std::unordered_set<IRInst*> reachable;
 	std::stack<IRInst*> work_stack;
 
-	reachable.insert(head);
-	work_stack.push(head);
-
 	auto mark_and_push = [&](IRInst* target) {
 		if (!target || reachable.count(target)) return;
 		reachable.insert(target);
 		work_stack.push(target);
 	};
+
+	if (label_lookup.count("main")) {
+		mark_and_push(label_lookup.at("main"));
+	} else {
+		mark_and_push(head);
+	}
 
 	while (!work_stack.empty()) {
 		IRInst* curr = work_stack.top();
@@ -108,10 +217,14 @@ get_reachable(IRInst*& head, const std::unordered_map<std::string, IRInst*> labe
 
 		switch (curr->op) {
 		case IR_GOTO:
-			mark_and_push(label_lookup.at(curr->arg1));
+			mark_and_push(label_lookup.at(curr->result));
 			break;
 		case IR_IFZ:
 			mark_and_push(label_lookup.at(curr->result));
+			mark_and_push(curr->next);
+			break;
+		case IR_CALL:
+			mark_and_push(label_lookup.at(curr->arg1));
 			mark_and_push(curr->next);
 			break;
 		case IR_RET:
@@ -155,8 +268,8 @@ std::unordered_map<std::string, int> calculate_uses(IRInst*& head) {
 		}
 
 		if (curr->result && (*curr->result != '\0') &&
-			(curr->op == IR_IFZ || curr->op == IR_PRINT || curr->op == IR_PARAM ||
-			 curr->op == IR_ARRAY_STORE)) {
+			(curr->op == IR_PRINT || curr->op == IR_PARAM || curr->op == IR_ARRAY_STORE ||
+			 curr->op == IR_RET)) {
 			use_counts[curr->result]++;
 		}
 	}
@@ -225,10 +338,6 @@ int dead_code_elimination(IRInst* head) {
 	return changes_made;
 }
 
-bool is_numeric(std::string arg) {
-	return std::all_of(arg.begin(), arg.end(), [](char a) { return std::isdigit(a); });
-}
-
 bool check_arg1(IRInst* inst, const std::unordered_map<std::string, int>& known_constants) {
 	if (!inst->arg1 || is_numeric(inst->arg1)) {
 		return false;
@@ -240,7 +349,7 @@ bool check_arg1(IRInst* inst, const std::unordered_map<std::string, int>& known_
 	}
 
 	delete[] inst->arg1;
-	inst->arg1 = strdup(std::to_string(it->second).c_str());
+	inst->arg1 = _ir_strdup(std::to_string(it->second).c_str());
 
 	return true;
 }
@@ -256,7 +365,7 @@ bool check_arg2(IRInst* inst, const std::unordered_map<std::string, int>& known_
 	}
 
 	delete[] inst->arg2;
-	inst->arg2 = strdup(std::to_string(it->second).c_str());
+	inst->arg2 = _ir_strdup(std::to_string(it->second).c_str());
 
 	return true;
 }
@@ -283,8 +392,102 @@ int constant_propagation(IRInst* head) {
 	return changes_made;
 }
 
+IRInst* find_loop_back_edge(IRInst* loop_header) {
+	if (!loop_header || loop_header->op != IR_LABEL) {
+		return nullptr;
+	}
+
+	for (IRInst* curr = loop_header->next; curr; curr = curr->next) {
+		if (curr->op != IR_GOTO || !curr->result || strcmp(curr->result, loop_header->result))
+			continue;
+
+		return curr;
+	}
+
+	return nullptr;
+}
+
+bool is_invariant(const char* operand, const std::unordered_set<std::string>& in_loop) {
+	if (!operand || *operand == '\0') {
+		return true;
+	}
+	if (is_numeric(operand)) {
+		return true;
+	}
+
+	return in_loop.find(operand) == in_loop.end();
+}
+
+std::unordered_set<std::string> find_defined_in_loop(IRInst* loop_header, IRInst* loop_back_edge) {
+	std::unordered_set<std::string> in_loop;
+
+	for (IRInst* curr = loop_header; curr != loop_back_edge->next; curr = curr->next) {
+		if (curr->op == IR_LABEL || curr->op == IR_GOTO || curr->op == IR_IFZ) continue;
+
+		if (!curr->result || *curr->result == '\0') continue;
+		in_loop.insert(curr->result);
+	}
+
+	return in_loop;
+}
+
+bool find_and_move_invariants(
+	IRInst* loop_header, IRInst* loop_back_edge, std::unordered_set<std::string> in_loop,
+	IRInst*& prev
+) {
+	IRInst* loop_prev = loop_header;
+
+	for (IRInst* curr = loop_header->next; curr != loop_back_edge->next;
+		 loop_prev = curr, curr = curr->next) {
+		if (has_side_effects(curr) || !curr->result) continue;
+
+		if (curr->op != IR_ADD && curr->op != IR_SUB && curr->op != IR_MUL && curr->op != IR_DIV &&
+			curr->op != IR_MOD && curr->op != IR_GT && curr->op != IR_LT && curr->op != IR_GTE &&
+			curr->op != IR_LTE && curr->op != IR_EQ && curr->op != IR_NEQ && curr->op != IR_AND &&
+			curr->op != IR_NOT && curr->op != IR_OR && curr->op != IR_ASSIGN)
+			continue;
+
+		if (!is_invariant(curr->arg1, in_loop) || !is_invariant(curr->arg2, in_loop)) continue;
+
+		IRInst* movable = curr;
+		loop_prev->next = movable->next;
+
+		if (prev) {
+			prev->next = movable;
+		}
+		movable->next = loop_header;
+
+		return true;
+	}
+
+	return false;
+}
+
 int loop_invariant_code_motion(IRInst* head) {
-	return 0;
+	int changes_made = 0;
+	bool moved = true;
+
+	while (moved) {
+		moved = false;
+		IRInst* prev = nullptr;
+
+		for (IRInst* curr = head; curr; prev = curr, curr = curr->next) {
+			if (curr->op != IR_LABEL) continue;
+			IRInst* loop_header = curr;
+			IRInst* loop_back_edge = find_loop_back_edge(loop_header);
+			if (!loop_back_edge) continue;
+
+			std::unordered_set<std::string> in_loop =
+				find_defined_in_loop(loop_header, loop_back_edge);
+
+			moved = find_and_move_invariants(loop_header, loop_back_edge, in_loop, prev);
+			changes_made += moved;
+
+			if (moved) break;
+		}
+	}
+
+	return changes_made;
 }
 
 bool optimise_mul(IRInst* inst) {
@@ -295,7 +498,7 @@ bool optimise_mul(IRInst* inst) {
 			delete[] inst->arg1;
 			delete[] inst->arg2;
 
-			inst->arg1 = strdup("0");
+			inst->arg1 = _ir_strdup("0");
 			inst->arg2 = nullptr;
 
 			return true;
@@ -304,8 +507,9 @@ bool optimise_mul(IRInst* inst) {
 			inst->op = IR_ASSIGN;
 
 			delete[] inst->arg1;
+			inst->arg1 = _ir_strdup(inst->arg2);
 
-			inst->arg1 = inst->arg2;
+			delete[] inst->arg2;
 			inst->arg2 = nullptr;
 
 			return true;
@@ -314,7 +518,7 @@ bool optimise_mul(IRInst* inst) {
 			inst->op = IR_ADD;
 
 			delete[] inst->arg1;
-			inst->arg1 = strdup(inst->arg2);
+			inst->arg1 = _ir_strdup(inst->arg2);
 
 			return true;
 		}
@@ -327,7 +531,7 @@ bool optimise_mul(IRInst* inst) {
 			delete[] inst->arg1;
 			delete[] inst->arg2;
 
-			inst->arg1 = strdup("0");
+			inst->arg1 = _ir_strdup("0");
 			inst->arg2 = nullptr;
 
 			return true;
@@ -346,7 +550,7 @@ bool optimise_mul(IRInst* inst) {
 			inst->op = IR_ADD;
 
 			delete[] inst->arg2;
-			inst->arg2 = strdup(inst->arg1);
+			inst->arg2 = _ir_strdup(inst->arg1);
 
 			return true;
 		}
@@ -360,8 +564,9 @@ bool optimise_zero(IRInst* inst) {
 		inst->op = IR_ASSIGN;
 
 		delete[] inst->arg1;
+		inst->arg1 = _ir_strdup(inst->arg2);
 
-		inst->arg1 = inst->arg2;
+		delete[] inst->arg2;
 		inst->arg2 = nullptr;
 
 		return true;

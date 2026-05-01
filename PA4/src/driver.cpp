@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
 		fclose(file);
 		return 0;
 	}
+	// print_ir_list(ir_list);
 
 	printf("\n--- Phase 4b: Optimization ---\n");
 	optimize_ir(ir_list);

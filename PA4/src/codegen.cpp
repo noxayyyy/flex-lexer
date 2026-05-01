@@ -31,15 +31,15 @@ void generate_mips(IRInst* ir_head, char* output_filename) {
 
 	fclose(out);
 
-	out = fopen(output_filename, "r");
-
-	int ch;
-	while ((ch = fgetc(out)) != EOF) {
-		putchar(ch);
-	}
-	std::cout << '\n';
-
-	fclose(out);
+	// out = fopen(output_filename, "r");
+	//
+	// int ch;
+	// while ((ch = fgetc(out)) != EOF) {
+	// 	putchar(ch);
+	// }
+	// std::cout << '\n';
+	//
+	// fclose(out);
 }
 
 std::string generate_data(IRInst* ir_head) {
