@@ -241,7 +241,7 @@ std::string generate_text(IRInst* ir_head) {
 			text_segment += "li $v0, 1\n";
 			load_arg(text_segment, curr->arg1, "$a0");
 			text_segment += "syscall\n";
-			text_segment += "li $v0, 11\nli $a0, '\n'\nsyscall\n";
+			text_segment += "li $v0, 11\nli $a0, '\\n'\nsyscall\n";
 			break;
 
 		default:
