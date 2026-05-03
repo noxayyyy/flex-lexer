@@ -12,9 +12,9 @@ def run_command(command):
     result = subprocess.run(command, capture_output=True, text=True)
     return result
 
-def clean_spim_output(raw_output):
+def clean_spim_output(raw_output, line_count):
     lines = raw_output.splitlines()
-    return "\n".join(lines[5:]).strip()
+    return "\n".join(lines[line_count:]).strip()
 
 def run_tests():
     count = 0
@@ -53,13 +53,14 @@ def run_tests():
         else:
             print(f"  ⚠️  Skipping IR check (Missing {expected_ir_path})")
 
+        print(mips_path)
         spim_proc = run_command(["spim", "-file", mips_path])
-        actual_runtime_output = clean_spim_output(spim_proc.stdout)
+        actual_runtime_output = clean_spim_output(spim_proc.stdout, 1)
         
         expected_spim_path = os.path.join(EXPECTED_SPIM_DIR, f"{test_name}_spim.txt")
         if os.path.exists(expected_spim_path):
             with open(expected_spim_path, 'r') as f:
-                expected_runtime_output = clean_spim_output(f.read())
+                expected_runtime_output = clean_spim_output(f.read(), 5)
             
             if actual_runtime_output == expected_runtime_output:
                 spim_matched = True

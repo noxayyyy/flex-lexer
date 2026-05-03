@@ -48,8 +48,8 @@ bool is_var(const char* str) {
 	return str ? std::isalpha(str[0]) || str[0] == '_' : false;
 }
 
-std::string safe_var(const std::string& var) {
-	return "var_" + var;
+std::string safe_var(const std::string& arg) {
+	return is_var(arg.c_str()) ? "var_" + arg : arg;
 }
 
 void load_arg(std::string& out, const char* arg, const std::string& reg) {
