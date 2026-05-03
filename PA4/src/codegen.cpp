@@ -48,16 +48,20 @@ bool is_var(const char* str) {
 	return str ? std::isalpha(str[0]) || str[0] == '_' : false;
 }
 
+std::string safe_var(const std::string& var) {
+	return "var_" + var;
+}
+
 void load_arg(std::string& out, const char* arg, const std::string& reg) {
 	if (!arg) return;
 
-	out += (is_var(arg) ? "lw" : "li") + reg + ", " + arg + "\n";
+	out += (is_var(arg) ? "lw " : "li ") + reg + ", " + safe_var(arg) + "\n";
 }
 
 void store_result(std::string& out, const char* result, const std::string& reg) {
 	if (!result) return;
 
-	out += "sw" + reg + ", " + result + "\n";
+	out += "sw " + reg + ", " + safe_var(result) + "\n";
 }
 
 void three_arg_inst(
@@ -65,7 +69,7 @@ void three_arg_inst(
 ) {
 	load_arg(out, arg1, "$t0");
 	load_arg(out, arg2, "$t1");
-	out += std::string(op) + "$t2, $t0, $t1\n";
+	out += std::string(op) + " $t2, $t0, $t1\n";
 	store_result(out, result, "$t2");
 }
 
@@ -106,7 +110,7 @@ std::string generate_data(IRInst* ir_head) {
 	std::string data_segment;
 	for (const auto& v : vars) {
 		if (labels.find(v) != labels.end()) continue;
-		data_segment += v + ": .word 0\n";
+		data_segment += safe_var(v) + ": .word 0\n";
 	}
 
 	return data_segment;
@@ -115,118 +119,118 @@ std::string generate_data(IRInst* ir_head) {
 std::string generate_text(IRInst* ir_head) {
 	std::string text_segment;
 
-	while (ir_head) {
-		switch (ir_head->op) {
+	for (IRInst* curr = ir_head; curr; curr = curr->next) {
+		switch (curr->op) {
 		// Arithmetic
 		case IR_ADD:
-			three_arg_inst(text_segment, "add", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "add", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_SUB:
-			three_arg_inst(text_segment, "sub", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "sub", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_MUL:
-			three_arg_inst(text_segment, "mul", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "mul", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_DIV:
-			load_arg(text_segment, ir_head->arg1, "$t0");
-			load_arg(text_segment, ir_head->arg2, "$t1");
+			load_arg(text_segment, curr->arg1, "$t0");
+			load_arg(text_segment, curr->arg2, "$t1");
 			text_segment += "div $t0, $t1\nmflo $t2\n";
-			store_result(text_segment, ir_head->result, "$t2");
+			store_result(text_segment, curr->result, "$t2");
 			break;
 		case IR_MOD:
-			load_arg(text_segment, ir_head->arg1, "$t0");
-			load_arg(text_segment, ir_head->arg2, "$t1");
+			load_arg(text_segment, curr->arg1, "$t0");
+			load_arg(text_segment, curr->arg2, "$t1");
 			text_segment += "div $t0, $t1\nmfhi $t2\n";
-			store_result(text_segment, ir_head->result, "$t2");
+			store_result(text_segment, curr->result, "$t2");
 			break;
 
 		// Relational
 		case IR_GT:
-			three_arg_inst(text_segment, "sgt", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "sgt", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_LT:
-			three_arg_inst(text_segment, "slt", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "slt", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_GTE:
-			three_arg_inst(text_segment, "sge", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "sge", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_LTE:
-			three_arg_inst(text_segment, "sle", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "sle", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_EQ:
-			three_arg_inst(text_segment, "seq", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "seq", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_NEQ:
-			three_arg_inst(text_segment, "sne", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "sne", curr->arg1, curr->arg2, curr->result);
 			break;
 
 		// Logical
 		case IR_AND:
-			three_arg_inst(text_segment, "and", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "and", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_OR:
-			three_arg_inst(text_segment, "or", ir_head->arg1, ir_head->arg2, ir_head->result);
+			three_arg_inst(text_segment, "or", curr->arg1, curr->arg2, curr->result);
 			break;
 		case IR_NOT:
-			load_arg(text_segment, ir_head->arg1, "$t0");
+			load_arg(text_segment, curr->arg1, "$t0");
 			text_segment += "seq $t2, $t0, $zero\n";
-			store_result(text_segment, ir_head->result, "$t2");
+			store_result(text_segment, curr->result, "$t2");
 			break;
 
 		// Assignment
 		case IR_ASSIGN:
-			load_arg(text_segment, ir_head->arg1, "$t0");
-			store_result(text_segment, ir_head->result, "$t0");
+			load_arg(text_segment, curr->arg1, "$t0");
+			store_result(text_segment, curr->result, "$t0");
 			break;
 
 		// Branch
 		case IR_IFZ:
-			load_arg(text_segment, ir_head->arg1, "$t0");
-			text_segment += "beqz $t0, " + std::string(ir_head->result) + "\n";
+			load_arg(text_segment, curr->arg1, "$t0");
+			text_segment += "beqz $t0, " + std::string(curr->result) + "\n";
 			break;
 		case IR_GOTO:
-			text_segment += "j " + std::string(ir_head->result) + "\n";
+			text_segment += "j " + std::string(curr->result) + "\n";
 			break;
 		case IR_LABEL:
-			text_segment += std::string(ir_head->result) + ":\n";
+			text_segment += std::string(curr->result) + ":\n";
 			break;
 
 		// Function
 		case IR_FUNC_START:
-			text_segment += "\n" + std::string(ir_head->result) + ":\n";
+			text_segment += "\n" + std::string(curr->result) + ":\n";
 			break;
 		case IR_PARAM:
-			load_arg(text_segment, ir_head->arg1, "$t0");
+			load_arg(text_segment, curr->arg1, "$t0");
 			text_segment += "sub $sp, $sp, 4\nsw $t0, ($sp)\n";
 			break;
 		case IR_POP_PARAM:
 			text_segment += "lw $t0, ($sp)\nadd $sp, $sp, 4\n";
-			store_result(text_segment, ir_head->result, "$t0");
+			store_result(text_segment, curr->result, "$t0");
 			break;
 		case IR_CALL:
-			text_segment += "jal " + std::string(ir_head->arg1) + "\n";
-			store_result(text_segment, ir_head->result, "$v0");
+			text_segment += "jal " + std::string(curr->arg1) + "\n";
+			store_result(text_segment, curr->result, "$v0");
 			break;
 		case IR_RET:
-			load_arg(text_segment, ir_head->result, "$v0");
+			load_arg(text_segment, curr->result, "$v0");
 			text_segment += "jr $ra\n";
 			break;
 
 		// Array
 		case IR_ARRAY_LOAD:
-			load_arg(text_segment, ir_head->arg2, "$t0");
+			load_arg(text_segment, curr->arg2, "$t0");
 			text_segment += "sll $t0, $t0, 2\n";
-			text_segment += "la $t1, " + std::string(ir_head->arg1) + "\n";
+			text_segment += "la $t1, " + safe_var(curr->arg1) + "\n";
 			text_segment += "add $t1, $t1, $t0\n";
 			text_segment += "lw $t2, ($t1)\n";
-			store_result(text_segment, ir_head->result, "$t2");
+			store_result(text_segment, curr->result, "$t2");
 			break;
 		case IR_ARRAY_STORE:
-			load_arg(text_segment, ir_head->arg1, "$t0");
+			load_arg(text_segment, curr->arg1, "$t0");
 			text_segment += "sll $t0, $t0, 2\n";
-			text_segment += "la $t1, " + std::string(ir_head->arg1) + "\n";
+			text_segment += "la $t1, " + safe_var(curr->arg1) + "\n";
 			text_segment += "add $t1, $t1, $t0\n";
-			load_arg(text_segment, ir_head->arg2, "$t2");
+			load_arg(text_segment, curr->arg2, "$t2");
 			text_segment += "sw $t2, ($t1)\n";
 			break;
 
@@ -235,15 +239,13 @@ std::string generate_text(IRInst* ir_head) {
 			break;
 		case IR_PRINT:
 			text_segment += "li $v0, 1\n";
-			load_arg(text_segment, ir_head->arg1, "$a0");
+			load_arg(text_segment, curr->arg1, "$a0");
 			text_segment += "syscall\n";
 			break;
 
 		default:
 			break;
 		}
-
-		ir_head = ir_head->next;
 	}
 
 	return text_segment;
